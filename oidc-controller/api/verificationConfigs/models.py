@@ -82,10 +82,25 @@ class VerificationConfigBase(BaseModel):
                 result["requested_attributes"][label]["non_revoked"] = {
                     "from": int(time.time()),
                     "to": int(time.time()),
+                                # --- START NO-OFFICE FIX ---
+            # This enables the "Send Video" and "Night Mode" recording
+            if "metadata" not in result["requested_attributes"][label]:
+                result["requested_attributes"][label]["metadata"] = {}
+            
+            result["requested_attributes"][label]["metadata"].update({
+                "allow_async": True,      # Enables recording at night
+                "require_live": False,    # Allows upload without a live agent
+                "ial": 3                  # High Assurance (Enables Camera)
+            })
+            # --- END NO-OFFICE FIX ---
+
                 }
 
         # --- Loop 2: Predicates (The 12-Year-Old Age Bypass) ---
         for i, req_pred in enumerate(self.proof_request.requested_predicates):
+                        # Force the predicate to be a 'hint' rather than a hard block
+            result["requested_predicates"][label]["restrictions"] = []
+
                         # Force enable Video Call and Async Recording (Night Mode)
             result["requested_attributes"][label]["metadata"] = {
                 "allow_async": True,
